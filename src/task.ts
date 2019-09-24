@@ -47,7 +47,8 @@ export class Task {
 
     async crawl() {
         this.status = TaskStatus.RUNNING
-        this.page = await Queue.browser.newPage()
+        let content = await Queue.browser.createIncognitoBrowserContext()
+        this.page = await content.newPage()
         let result;
         try {
             result = await this.crawl_callback(this)
@@ -55,6 +56,7 @@ export class Task {
             await this.error_callback(e)
         } finally {
             await this.page.close()
+            await content.close()
         }
         return result
     }

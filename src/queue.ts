@@ -113,7 +113,7 @@ class CrawlerQueue extends EventEmitter {
     async run() {
         if (this.browser === null) {
             this.browser = await puppeteer.launch({
-                headless: false
+                headless: true
             })
         }
         await this.start()

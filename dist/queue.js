@@ -149,7 +149,7 @@ var CrawlerQueue = /** @class */ (function (_super) {
                         if (!(this.browser === null)) return [3 /*break*/, 2];
                         _a = this;
                         return [4 /*yield*/, puppeteer_extra_1.default.launch({
-                                headless: false
+                                headless: true
                             })];
                     case 1:
                         _a.browser = _b.sent();

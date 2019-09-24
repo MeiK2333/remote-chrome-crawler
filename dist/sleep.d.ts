@@ -1,1 +1,1 @@
-export declare function sleep(ms: any): Promise<unknown>;
+export declare function sleep(ms: number): Promise<unknown>;
