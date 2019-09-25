@@ -34,16 +34,12 @@ var Task = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         this.status = TaskStatus.RUNNING;
-                        return [4 /*yield*/, queue_1.Queue.browser.createIncognitoBrowserContext()
-                            // this.page = await content.newPage()
-                        ];
+                        return [4 /*yield*/, queue_1.Queue.browser.createIncognitoBrowserContext()];
                     case 1:
                         content = _b.sent();
-                        // this.page = await content.newPage()
                         _a = this;
-                        return [4 /*yield*/, queue_1.Queue.browser.newPage()];
+                        return [4 /*yield*/, content.newPage()];
                     case 2:
-                        // this.page = await content.newPage()
                         _a.page = _b.sent();
                         return [4 /*yield*/, puppeteer_stealth_1.puppeteerStealth(this.page)];
                     case 3:
