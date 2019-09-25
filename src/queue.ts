@@ -3,11 +3,9 @@ import { Browser } from 'puppeteer'
 import { sleep } from './sleep'
 
 import log from 'loglevel'
-import puppeteer from 'puppeteer-extra'
-import pluginStealth from 'puppeteer-extra-plugin-stealth'
+import puppeteer from 'puppeteer'
 import EventEmitter from 'events'
 
-puppeteer.use(pluginStealth());
 
 class CrawlerQueue extends EventEmitter {
     _queue: Array<Task>
@@ -80,14 +78,14 @@ class CrawlerQueue extends EventEmitter {
                                     task.url,
                                     task.crawl_callback,
                                     task.options
-                                    )
-                                    t.retry = task.retry - 1
-                                    await this.push(t)
-                                }
+                                )
+                                t.retry = task.retry - 1
+                                await this.push(t)
+                            }
 
-                                task.status = TaskStatus.FAILURE
-                                log.warn(task.url, 'failure')
-                                this.emit('reject', e)
+                            task.status = TaskStatus.FAILURE
+                            log.warn(task.url, 'failure')
+                            this.emit('reject', e)
                         })
                     running += 1
                 }

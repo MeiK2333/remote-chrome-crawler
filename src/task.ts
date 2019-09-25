@@ -1,6 +1,7 @@
 import { Page } from 'puppeteer'
 import { Queue } from './queue'
 import log from 'loglevel'
+import { puppeteerStealth } from './puppeteer-stealth'
 
 export enum TaskStatus {
     PENDING,
@@ -48,7 +49,9 @@ export class Task {
     async crawl() {
         this.status = TaskStatus.RUNNING
         let content = await Queue.browser.createIncognitoBrowserContext()
-        this.page = await content.newPage()
+        // this.page = await content.newPage()
+        this.page = await Queue.browser.newPage()
+        await puppeteerStealth(this.page)
         let result;
         try {
             result = await this.crawl_callback(this)
