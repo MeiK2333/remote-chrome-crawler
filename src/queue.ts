@@ -74,20 +74,20 @@ class CrawlerQueue extends EventEmitter {
                             this.emit('resolved', res)
                         })
                         .catch(async e => {
-                            task.status = TaskStatus.FAILURE
-                            log.warn(task.url, 'failure')
-                            this.emit('reject', e)
-
                             if (task.retry > 0) {
                                 console.log(`${task.url} retry: ${task.retry} -> ${task.retry - 1}`)
                                 let t = new Task(
                                     task.url,
                                     task.crawl_callback,
                                     task.options
-                                )
-                                t.retry = task.retry - 1
-                                await this.push(t)
-                            }
+                                    )
+                                    t.retry = task.retry - 1
+                                    await this.push(t)
+                                }
+
+                                task.status = TaskStatus.FAILURE
+                                log.warn(task.url, 'failure')
+                                this.emit('reject', e)
                         })
                     running += 1
                 }
