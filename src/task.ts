@@ -49,8 +49,7 @@ export class Task {
     async crawl() {
         this.status = TaskStatus.RUNNING
         let content = await Queue.browser.createIncognitoBrowserContext()
-        // this.page = await content.newPage()
-        this.page = await Queue.browser.newPage()
+        this.page = await content.newPage()
         await puppeteerStealth(this.page)
         let result;
         try {
