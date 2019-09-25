@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var queue_1 = require("./queue");
+var puppeteer_stealth_1 = require("./puppeteer-stealth");
 var TaskStatus;
 (function (TaskStatus) {
     TaskStatus[TaskStatus["PENDING"] = 0] = "PENDING";
@@ -33,34 +34,41 @@ var Task = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         this.status = TaskStatus.RUNNING;
-                        return [4 /*yield*/, queue_1.Queue.browser.createIncognitoBrowserContext()];
+                        return [4 /*yield*/, queue_1.Queue.browser.createIncognitoBrowserContext()
+                            // this.page = await content.newPage()
+                        ];
                     case 1:
                         content = _b.sent();
+                        // this.page = await content.newPage()
                         _a = this;
-                        return [4 /*yield*/, content.newPage()];
+                        return [4 /*yield*/, queue_1.Queue.browser.newPage()];
                     case 2:
+                        // this.page = await content.newPage()
                         _a.page = _b.sent();
-                        _b.label = 3;
+                        return [4 /*yield*/, puppeteer_stealth_1.puppeteerStealth(this.page)];
                     case 3:
-                        _b.trys.push([3, 5, 7, 10]);
-                        return [4 /*yield*/, this.crawl_callback(this)];
+                        _b.sent();
+                        _b.label = 4;
                     case 4:
-                        result = _b.sent();
-                        return [3 /*break*/, 10];
+                        _b.trys.push([4, 6, 8, 11]);
+                        return [4 /*yield*/, this.crawl_callback(this)];
                     case 5:
+                        result = _b.sent();
+                        return [3 /*break*/, 11];
+                    case 6:
                         e_1 = _b.sent();
                         return [4 /*yield*/, this.error_callback(e_1)];
-                    case 6:
+                    case 7:
                         _b.sent();
-                        return [3 /*break*/, 10];
-                    case 7: return [4 /*yield*/, this.page.close()];
-                    case 8:
-                        _b.sent();
-                        return [4 /*yield*/, content.close()];
+                        return [3 /*break*/, 11];
+                    case 8: return [4 /*yield*/, this.page.close()];
                     case 9:
                         _b.sent();
+                        return [4 /*yield*/, content.close()];
+                    case 10:
+                        _b.sent();
                         return [7 /*endfinally*/];
-                    case 10: return [2 /*return*/, result];
+                    case 11: return [2 /*return*/, result];
                 }
             });
         });

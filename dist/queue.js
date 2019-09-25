@@ -4,10 +4,8 @@ var tslib_1 = require("tslib");
 var task_1 = require("./task");
 var sleep_1 = require("./sleep");
 var loglevel_1 = tslib_1.__importDefault(require("loglevel"));
-var puppeteer_extra_1 = tslib_1.__importDefault(require("puppeteer-extra"));
-var puppeteer_extra_plugin_stealth_1 = tslib_1.__importDefault(require("puppeteer-extra-plugin-stealth"));
+var puppeteer_1 = tslib_1.__importDefault(require("puppeteer"));
 var events_1 = tslib_1.__importDefault(require("events"));
-puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default());
 var CrawlerQueue = /** @class */ (function (_super) {
     tslib_1.__extends(CrawlerQueue, _super);
     function CrawlerQueue() {
@@ -85,9 +83,6 @@ var CrawlerQueue = /** @class */ (function (_super) {
                                 return tslib_1.__generator(this, function (_a) {
                                     switch (_a.label) {
                                         case 0:
-                                            task.status = task_1.TaskStatus.FAILURE;
-                                            loglevel_1.default.warn(task.url, 'failure');
-                                            this.emit('reject', e);
                                             if (!(task.retry > 0)) return [3 /*break*/, 2];
                                             console.log(task.url + " retry: " + task.retry + " -> " + (task.retry - 1));
                                             t = new task_1.Task(task.url, task.crawl_callback, task.options);
@@ -96,7 +91,11 @@ var CrawlerQueue = /** @class */ (function (_super) {
                                         case 1:
                                             _a.sent();
                                             _a.label = 2;
-                                        case 2: return [2 /*return*/];
+                                        case 2:
+                                            task.status = task_1.TaskStatus.FAILURE;
+                                            loglevel_1.default.warn(task.url, 'failure');
+                                            this.emit('reject', e);
+                                            return [2 /*return*/];
                                     }
                                 });
                             }); });
@@ -148,7 +147,7 @@ var CrawlerQueue = /** @class */ (function (_super) {
                     case 0:
                         if (!(this.browser === null)) return [3 /*break*/, 2];
                         _a = this;
-                        return [4 /*yield*/, puppeteer_extra_1.default.launch({
+                        return [4 /*yield*/, puppeteer_1.default.launch({
                                 headless: true
                             })];
                     case 1:
