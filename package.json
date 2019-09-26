@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-crawler",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -10,7 +10,6 @@
   "dependencies": {
     "@types/node": "^12.7.4",
     "@types/puppeteer": "^1.19.1",
-    "loglevel": "^1.6.4",
     "puppeteer": "^1.19.0",
     "tslint": "^5.20.0"
   },
