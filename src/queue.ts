@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 import { Task } from './task'
 import { sleep } from './sleep'
+import { logger } from './logger'
 
 export class CrawlerNode {
     prev: CrawlerNode
@@ -17,30 +18,38 @@ export class CrawlerNodeList {
     head: CrawlerNode
     tail: CrawlerNode
     constructor() {
-        this.head = new CrawlerNode(new Task(''))
+        this.head = null
         this.tail = null
     }
 
-    *iter() {
-        let cur = this.head
-        while (cur.next) {
-            yield cur
-            cur = cur.next
-        }
-    }
-
     add(node: CrawlerNode) {
+        node.prev = null
+        node.next = null
+        if (this.head === null) {
+            this.head = node
+            this.tail = node
+            return
+        }
         this.tail.next = node
         node.prev = this.tail
+        node.next = null
         this.tail = node
     }
 
     delete(node: CrawlerNode): CrawlerNode {
         let cur = this.head
-        while (cur.next) {
+        while (cur) {
             if (node.task.id === cur.task.id) {
-                cur.prev.next = cur.next
-                cur.next.prev = cur.prev
+                if (cur.prev) {
+                    cur.prev.next = cur.next
+                } else {
+                    this.head = cur.next
+                }
+                if (cur.next) {
+                    cur.next.prev = cur.prev
+                } else {
+                    this.tail = cur.prev
+                }
                 cur.prev = null
                 cur.next = null
                 return cur
@@ -51,33 +60,22 @@ export class CrawlerNodeList {
     }
 
     empty(): boolean {
-        return this.head.next === null
+        return this.head === null
     }
 
     size() {
         let cur = this.head
         let count = 0
-        while (cur.next) {
+        while (cur) {
             count++
+            cur = cur.next
         }
         return count
     }
 
     pop(): CrawlerNode {
-        if (this.head.next) {
-            return this.delete(this.head.next)
-        }
-        return null
-    }
-
-    get(n: number): CrawlerNode {
-        let cur = this.head
-        while (cur.next) {
-            cur = cur.next
-            if (n === 0) {
-                return cur
-            }
-            n--
+        if (this.head) {
+            return this.delete(this.head)
         }
         return null
     }
@@ -102,15 +100,20 @@ export class CrawlerQueue extends EventEmitter {
         this.started = false
         this.ended = false
 
-        this.on('resolved', this.resolved)
-        this.on('reject', this.reject)
+        this.on('resolved', this._resolved)
+        this.on('reject', this._reject)
+        this.on('retry', this._retry)
     }
 
-    async resolved(res) {
+    async _resolved(res) {
         await this._onTaskChange()
     }
 
-    async reject(err) {
+    async _reject(err) {
+        await this._onTaskChange()
+    }
+
+    async _retry() {
         await this._onTaskChange()
     }
 
@@ -125,18 +128,23 @@ export class CrawlerQueue extends EventEmitter {
         }
     }
 
-    add(task: Task) {
+    async add(task: Task) {
         let node = new CrawlerNode(task)
         this.pending_node_list.add(node)
+        if (this.started) {
+            await this._onTaskChange()
+        }
     }
 
     async _start() {
+        logger.debug('queue run start')
         this.started = true
         await this._onTaskChange()
     }
 
     async _end() {
         this.ended = true
+        logger.debug('queue run end')
     }
 
     async _onTaskChange() {
@@ -154,9 +162,31 @@ export class CrawlerQueue extends EventEmitter {
             this.running_node_list.add(node)
             node.task.run()
                 .then(async res => {
+                    this.running_node_list.delete(node)
+                    if (process.env.DEBUG) {
+                        this.success_node_list.add(node)
+                    }
+
+                    logger.debug(`${node.task.url} done`)
                     this.emit('resolved', res)
                 })
                 .catch(async err => {
+                    this.running_node_list.delete(node)
+                    if (process.env.DEBUG) {
+                        this.failure_node_list.add(node)
+                    }
+
+                    logger.error(`${node.task.url} failure`)
+                    logger.error(err)
+
+                    if (node.task.options.retry > 0) {
+                        await node.task.onRetry()
+                        node.task.options.retry--
+                        this.running_node_list.add(node)
+                        this.emit('retry')
+                        return
+                    }
+
                     this.emit('reject', err)
                 })
         }

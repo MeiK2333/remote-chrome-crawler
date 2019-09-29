@@ -8,16 +8,22 @@
   ],
   "typings": "dist/index.d.ts",
   "dependencies": {
-    "@types/node": "^12.7.4",
-    "@types/puppeteer": "^1.19.1",
-    "puppeteer": "^1.19.0",
-    "tslint": "^5.20.0"
+    "@types/node": "*",
+    "@types/puppeteer": "*",
+    "puppeteer": "*",
+    "winston": "*"
   },
   "devDependencies": {
-    "ts-node": "^8.3.0",
-    "typescript": "^3.6.3"
+    "@types/jest": "^24.0.18",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
+    "ts-node": "*",
+    "tslint": "*",
+    "typescript": "*"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:MeiK2333/puppeteer-crawler.git"
