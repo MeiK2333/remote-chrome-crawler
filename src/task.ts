@@ -1,4 +1,6 @@
 import { logger } from './logger'
+import { Page } from 'puppeteer'
+import { CrawlerQueue } from './queue'
 
 export enum TaskStatus {
     PENDING,
@@ -20,6 +22,10 @@ export class Task {
     url: string
     status: TaskStatus
     options: TaskOptions
+    queue: CrawlerQueue
+    page: Page
+    prev: Task
+    next: Task
 
     constructor(url: string, options: TaskOptions = {}) {
         this.options = {
@@ -34,6 +40,10 @@ export class Task {
         task_count++
         this.url = url
         this.status = TaskStatus.PENDING
+        this.queue = null
+        this.page = null
+        this.prev = null
+        this.next = null
     }
 
     get id(): number { return this.__id__ }
@@ -47,6 +57,7 @@ export class Task {
     async run() {
         let result;
         this.status = TaskStatus.RUNNING
+        this.page = await this.queue.createPage(this)
         try {
             result = await this.options.callback(this)
         } catch (err) {
@@ -54,7 +65,7 @@ export class Task {
             await this.options.error_callback(err)
             throw err
         } finally {
-
+            await this.queue.closePage(this)
         }
         this.status = TaskStatus.SUCCESS
         return result

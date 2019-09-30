@@ -2,27 +2,18 @@ import EventEmitter from 'events'
 import { Task } from './task'
 import { sleep } from './sleep'
 import { logger } from './logger'
-
-export class CrawlerNode {
-    prev: CrawlerNode
-    next: CrawlerNode
-    task: Task
-    constructor(task: Task) {
-        this.task = task
-        this.prev = null
-        this.next = null
-    }
-}
+import { Browser } from 'puppeteer'
+import { createBrowser, closeBrowser, createPage, closePage } from './functions'
 
 export class CrawlerNodeList {
-    head: CrawlerNode
-    tail: CrawlerNode
+    head: Task
+    tail: Task
     constructor() {
         this.head = null
         this.tail = null
     }
 
-    add(node: CrawlerNode) {
+    add(node: Task) {
         node.prev = null
         node.next = null
         if (this.head === null) {
@@ -36,10 +27,10 @@ export class CrawlerNodeList {
         this.tail = node
     }
 
-    delete(node: CrawlerNode): CrawlerNode {
+    delete(node: Task): Task {
         let cur = this.head
         while (cur) {
-            if (node.task.id === cur.task.id) {
+            if (node.id === cur.id) {
                 if (cur.prev) {
                     cur.prev.next = cur.next
                 } else {
@@ -73,7 +64,7 @@ export class CrawlerNodeList {
         return count
     }
 
-    pop(): CrawlerNode {
+    pop(): Task {
         if (this.head) {
             return this.delete(this.head)
         }
@@ -86,9 +77,16 @@ export class CrawlerQueue extends EventEmitter {
     running_node_list: CrawlerNodeList
     success_node_list: CrawlerNodeList
     failure_node_list: CrawlerNodeList
+
     max_pages: number
     started: boolean
     ended: boolean
+    browser: Browser
+
+    createBrowser: CallableFunction
+    closeBrowser: CallableFunction
+    createPage: CallableFunction
+    closePage: CallableFunction
 
     constructor() {
         super()
@@ -99,6 +97,12 @@ export class CrawlerQueue extends EventEmitter {
         this.max_pages = Number(process.env.MAX_PAGES) || 8
         this.started = false
         this.ended = false
+        this.browser = null
+
+        this.createBrowser = createBrowser
+        this.closeBrowser = closeBrowser
+        this.createPage = createPage
+        this.closePage = closePage
 
         this.on('resolved', this._resolved)
         this.on('reject', this._reject)
@@ -129,8 +133,8 @@ export class CrawlerQueue extends EventEmitter {
     }
 
     async add(task: Task) {
-        let node = new CrawlerNode(task)
-        this.pending_node_list.add(node)
+        task.queue = this
+        this.pending_node_list.add(task)
         if (this.started) {
             await this._onTaskChange()
         }
@@ -139,11 +143,13 @@ export class CrawlerQueue extends EventEmitter {
     async _start() {
         logger.debug('queue run start')
         this.started = true
+        this.browser = await this.createBrowser(this)
         await this._onTaskChange()
     }
 
     async _end() {
         this.ended = true
+        await this.closeBrowser(this)
         logger.debug('queue run end')
     }
 
@@ -160,14 +166,14 @@ export class CrawlerQueue extends EventEmitter {
             pending_count--
             running_count++
             this.running_node_list.add(node)
-            node.task.run()
+            node.run()
                 .then(async res => {
                     this.running_node_list.delete(node)
                     if (process.env.DEBUG) {
                         this.success_node_list.add(node)
                     }
 
-                    logger.debug(`${node.task.url} done`)
+                    logger.debug(`${node.url} done`)
                     this.emit('resolved', res)
                 })
                 .catch(async err => {
@@ -176,12 +182,12 @@ export class CrawlerQueue extends EventEmitter {
                         this.failure_node_list.add(node)
                     }
 
-                    logger.error(`${node.task.url} failure`)
+                    logger.error(`${node.url} failure`)
                     logger.error(err)
 
-                    if (node.task.options.retry > 0) {
-                        await node.task.onRetry()
-                        node.task.options.retry--
+                    if (node.options.retry > 0) {
+                        await node.onRetry()
+                        node.options.retry--
                         this.running_node_list.add(node)
                         this.emit('retry')
                         return

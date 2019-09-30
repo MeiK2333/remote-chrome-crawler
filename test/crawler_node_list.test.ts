@@ -1,4 +1,4 @@
-import { CrawlerNodeList, CrawlerNode } from "../src/queue"
+import { CrawlerNodeList } from "../src/queue"
 import { Task } from "../src/task"
 
 test('new', () => {
@@ -9,8 +9,8 @@ test('new', () => {
 
 test('add', () => {
     let list = new CrawlerNodeList()
-    let node1 = new CrawlerNode(null)
-    let node2 = new CrawlerNode(null)
+    let node1 = new Task('')
+    let node2 = new Task('')
     list.add(node1)
     expect(list.head).toBe(node1)
     expect(list.tail).toBe(node1)
@@ -21,8 +21,8 @@ test('add', () => {
 
 test('delete', () => {
     let list = new CrawlerNodeList()
-    let node1 = new CrawlerNode(new Task(''))
-    let node2 = new CrawlerNode(new Task(''))
+    let node1 = new Task('')
+    let node2 = new Task('')
     list.add(node1)
     let node3 = list.delete(node1)
     expect(list.head).toBe(null)
@@ -38,7 +38,7 @@ test('delete', () => {
     list.delete(node2)
     expect(list.tail).toBe(node1)
 
-    let node5 = new CrawlerNode(new Task(''))
+    let node5 = new Task('')
     list.add(node2)
     list.add(node5)
     expect(list.tail).toBe(node5)
@@ -48,9 +48,9 @@ test('delete', () => {
 
 test('size', () => {
     let list = new CrawlerNodeList()
-    let node1 = new CrawlerNode(new Task(''))
-    let node2 = new CrawlerNode(new Task(''))
-    let node3 = new CrawlerNode(new Task(''))
+    let node1 = new Task('')
+    let node2 = new Task('')
+    let node3 = new Task('')
     expect(list.size()).toBe(0)
     list.add(node1)
     expect(list.size()).toBe(1)
@@ -63,9 +63,9 @@ test('size', () => {
 
 test('pop', () => {
     let list = new CrawlerNodeList()
-    let node1 = new CrawlerNode(new Task(''))
-    let node2 = new CrawlerNode(new Task(''))
-    let node3 = new CrawlerNode(new Task(''))
+    let node1 = new Task('')
+    let node2 = new Task('')
+    let node3 = new Task('')
     list.add(node1)
     list.add(node2)
     list.add(node3)
@@ -83,7 +83,7 @@ test('pop', () => {
 
 test('empty', () => {
     let list = new CrawlerNodeList()
-    let node1 = new CrawlerNode(new Task(''))
+    let node1 = new Task('')
     expect(list.empty()).toBe(true)
     list.add(node1)
     expect(list.empty()).toBe(false)

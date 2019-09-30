@@ -1,6 +1,5 @@
 import { CrawlerQueue } from "../src/queue"
 import { Task } from "../src/task"
-import { sleep } from "../src/sleep"
 
 test('new', () => {
     let queue = new CrawlerQueue()
@@ -20,6 +19,7 @@ test('run2', async () => {
     let task = new Task('', {
         callback: async () => {
             expect(queue.started).toBe(true)
+            expect(queue.ended).toBe(false)
         }
     })
     await queue.add(task)
