@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-crawler",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -8,17 +8,22 @@
   ],
   "typings": "dist/index.d.ts",
   "dependencies": {
-    "@types/node": "^12.7.4",
-    "@types/puppeteer": "^1.19.1",
-    "loglevel": "^1.6.4",
-    "puppeteer": "^1.19.0",
-    "tslint": "^5.20.0"
+    "@types/node": "*",
+    "@types/puppeteer": "*",
+    "puppeteer": "*",
+    "winston": "*"
   },
   "devDependencies": {
-    "ts-node": "^8.3.0",
-    "typescript": "^3.6.3"
+    "@types/jest": "*",
+    "jest": "*",
+    "ts-jest": "*",
+    "ts-node": "*",
+    "tslint": "*",
+    "typescript": "*"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:MeiK2333/puppeteer-crawler.git"

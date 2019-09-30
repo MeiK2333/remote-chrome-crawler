@@ -1,22 +1,38 @@
 /// <reference types="node" />
+import EventEmitter from 'events';
 import { Task } from './task';
 import { Browser } from 'puppeteer';
-import EventEmitter from 'events';
-declare class CrawlerQueue extends EventEmitter {
-    _queue: Array<Task>;
-    browser: Browser;
+export declare class CrawlerNodeList {
+    head: Task;
+    tail: Task;
+    constructor();
+    add(node: Task): void;
+    delete(node: Task): Task;
+    empty(): boolean;
+    size(): number;
+    pop(): Task;
+}
+export declare class CrawlerQueue extends EventEmitter {
+    pending_node_list: CrawlerNodeList;
+    running_node_list: CrawlerNodeList;
+    success_node_list: CrawlerNodeList;
+    failure_node_list: CrawlerNodeList;
+    max_pages: number;
     started: boolean;
     ended: boolean;
-    max_pages: number;
+    browser: Browser;
+    createBrowser: CallableFunction;
+    closeBrowser: CallableFunction;
+    createPage: CallableFunction;
+    closePage: CallableFunction;
     constructor();
-    push(item: Task): Promise<void>;
-    pop(): Task | undefined;
-    empty(): boolean;
-    removeEnded(): any;
-    onTaskChange(): Promise<void>;
-    start(): Promise<void>;
-    end(): Promise<void>;
+    _resolved(res: any): Promise<void>;
+    _reject(err: any): Promise<void>;
+    _retry(): Promise<void>;
     run(): Promise<void>;
+    add(task: Task): Promise<void>;
+    _start(): Promise<void>;
+    _end(): Promise<void>;
+    _onTaskChange(): Promise<void>;
 }
 export declare const Queue: CrawlerQueue;
-export {};

@@ -1,202 +1,268 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var task_1 = require("./task");
-var sleep_1 = require("./sleep");
-var loglevel_1 = tslib_1.__importDefault(require("loglevel"));
-var puppeteer_1 = tslib_1.__importDefault(require("puppeteer"));
 var events_1 = tslib_1.__importDefault(require("events"));
+var sleep_1 = require("./sleep");
+var logger_1 = require("./logger");
+var functions_1 = require("./functions");
+var CrawlerNodeList = /** @class */ (function () {
+    function CrawlerNodeList() {
+        this.head = null;
+        this.tail = null;
+    }
+    CrawlerNodeList.prototype.add = function (node) {
+        node.prev = null;
+        node.next = null;
+        if (this.head === null) {
+            this.head = node;
+            this.tail = node;
+            return;
+        }
+        this.tail.next = node;
+        node.prev = this.tail;
+        node.next = null;
+        this.tail = node;
+    };
+    CrawlerNodeList.prototype.delete = function (node) {
+        var cur = this.head;
+        while (cur) {
+            if (node.id === cur.id) {
+                if (cur.prev) {
+                    cur.prev.next = cur.next;
+                }
+                else {
+                    this.head = cur.next;
+                }
+                if (cur.next) {
+                    cur.next.prev = cur.prev;
+                }
+                else {
+                    this.tail = cur.prev;
+                }
+                cur.prev = null;
+                cur.next = null;
+                return cur;
+            }
+            cur = cur.next;
+        }
+        return null;
+    };
+    CrawlerNodeList.prototype.empty = function () {
+        return this.head === null;
+    };
+    CrawlerNodeList.prototype.size = function () {
+        var cur = this.head;
+        var count = 0;
+        while (cur) {
+            count++;
+            cur = cur.next;
+        }
+        return count;
+    };
+    CrawlerNodeList.prototype.pop = function () {
+        if (this.head) {
+            return this.delete(this.head);
+        }
+        return null;
+    };
+    return CrawlerNodeList;
+}());
+exports.CrawlerNodeList = CrawlerNodeList;
 var CrawlerQueue = /** @class */ (function (_super) {
     tslib_1.__extends(CrawlerQueue, _super);
     function CrawlerQueue() {
         var _this = _super.call(this) || this;
-        _this._queue = [];
-        //@ts-ignore
-        _this.browser = null;
+        _this.pending_node_list = new CrawlerNodeList();
+        _this.running_node_list = new CrawlerNodeList();
+        _this.success_node_list = new CrawlerNodeList();
+        _this.failure_node_list = new CrawlerNodeList();
+        _this.max_pages = Number(process.env.MAX_PAGES) || 8;
         _this.started = false;
         _this.ended = false;
-        _this.max_pages = Number(process.env.pages) || 8;
+        _this.browser = null;
+        _this.createBrowser = functions_1.createBrowser;
+        _this.closeBrowser = functions_1.closeBrowser;
+        _this.createPage = functions_1.createPage;
+        _this.closePage = functions_1.closePage;
+        _this.on('resolved', _this._resolved);
+        _this.on('reject', _this._reject);
+        _this.on('retry', _this._retry);
         return _this;
     }
-    CrawlerQueue.prototype.push = function (item) {
+    CrawlerQueue.prototype._resolved = function (res) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        this._queue.push(item);
-                        if (!this.started) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.onTaskChange()];
+                    case 0: return [4 /*yield*/, this._onTaskChange()];
                     case 1:
                         _a.sent();
-                        _a.label = 2;
-                    case 2: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         });
     };
-    CrawlerQueue.prototype.pop = function () {
-        return this._queue.shift();
-    };
-    CrawlerQueue.prototype.empty = function () {
-        return this._queue.length === 0;
-    };
-    CrawlerQueue.prototype.removeEnded = function () {
-        for (var i = 0; i < this._queue.length; i++) {
-            if (this._queue[i].status === task_1.TaskStatus.SUCCESS || this._queue[i].status === task_1.TaskStatus.FAILURE) {
-                this._queue.splice(i, 1);
-                return this.removeEnded();
-            }
-        }
-    };
-    CrawlerQueue.prototype.onTaskChange = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var running, pending, _loop_1, this_1, i;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                this.removeEnded();
-                running = 0;
-                pending = 0;
-                this._queue.map(function (task, index, array) {
-                    if (task.status === task_1.TaskStatus.RUNNING) {
-                        running += 1;
-                    }
-                    else if (task.status === task_1.TaskStatus.PENDING) {
-                        pending += 1;
-                    }
-                });
-                if (pending !== 0) {
-                    _loop_1 = function (i) {
-                        var task = this_1._queue[i];
-                        if (task.status === task_1.TaskStatus.PENDING) {
-                            loglevel_1.default.debug(task.url);
-                            task.crawl()
-                                .then(function (res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                return tslib_1.__generator(this, function (_a) {
-                                    task.status = task_1.TaskStatus.SUCCESS;
-                                    loglevel_1.default.debug(task.url, 'success');
-                                    this.emit('resolved', res);
-                                    return [2 /*return*/];
-                                });
-                            }); })
-                                .catch(function (e) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                var t;
-                                return tslib_1.__generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            if (!(task.retry > 0)) return [3 /*break*/, 2];
-                                            console.log(task.url + " retry: " + task.retry + " -> " + (task.retry - 1));
-                                            t = new task_1.Task(task.url, task.crawl_callback, task.options);
-                                            t.retry = task.retry - 1;
-                                            return [4 /*yield*/, this.push(t)];
-                                        case 1:
-                                            _a.sent();
-                                            _a.label = 2;
-                                        case 2:
-                                            task.status = task_1.TaskStatus.FAILURE;
-                                            loglevel_1.default.warn(task.url, 'failure');
-                                            this.emit('reject', e);
-                                            return [2 /*return*/];
-                                    }
-                                });
-                            }); });
-                            running += 1;
-                        }
-                    };
-                    this_1 = this;
-                    for (i = 0; i < this._queue.length && running < this.max_pages; i++) {
-                        _loop_1(i);
-                    }
-                }
-                if (running === 0 && pending === 0) {
-                    this.ended = true;
-                }
-                return [2 /*return*/];
-            });
-        });
-    };
-    CrawlerQueue.prototype.start = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.started = true;
-                this.onTaskChange();
-                return [2 /*return*/];
-            });
-        });
-    };
-    CrawlerQueue.prototype.end = function () {
+    CrawlerQueue.prototype._reject = function (err) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        this.ended = true;
-                        if (!this.browser) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.browser.close()];
+                    case 0: return [4 /*yield*/, this._onTaskChange()];
                     case 1:
                         _a.sent();
-                        _a.label = 2;
-                    case 2: return [2 /*return*/];
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CrawlerQueue.prototype._retry = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._onTaskChange()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
                 }
             });
         });
     };
     CrawlerQueue.prototype.run = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._start()];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        if (!true) return [3 /*break*/, 6];
+                        return [4 /*yield*/, sleep_1.sleep(100)];
+                    case 3:
+                        _a.sent();
+                        if (!this.ended) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this._end()];
+                    case 4:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 5: return [3 /*break*/, 2];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CrawlerQueue.prototype.add = function (task) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        task.queue = this;
+                        this.pending_node_list.add(task);
+                        if (!this.started) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this._onTaskChange()];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CrawlerQueue.prototype._start = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var _a;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        if (!(this.browser === null)) return [3 /*break*/, 2];
+                        logger_1.logger.debug('queue run start');
+                        this.started = true;
                         _a = this;
-                        return [4 /*yield*/, puppeteer_1.default.launch({
-                                headless: true
-                            })];
+                        return [4 /*yield*/, this.createBrowser(this)];
                     case 1:
                         _a.browser = _b.sent();
-                        _b.label = 2;
-                    case 2: return [4 /*yield*/, this.start()];
-                    case 3:
-                        _b.sent();
-                        _b.label = 4;
-                    case 4:
-                        if (!true) return [3 /*break*/, 8];
-                        return [4 /*yield*/, sleep_1.sleep(100)];
-                    case 5:
-                        _b.sent();
-                        if (!this.ended) return [3 /*break*/, 7];
-                        return [4 /*yield*/, this.end()];
-                    case 6:
+                        return [4 /*yield*/, this._onTaskChange()];
+                    case 2:
                         _b.sent();
                         return [2 /*return*/];
-                    case 7: return [3 /*break*/, 4];
-                    case 8: return [2 /*return*/];
                 }
+            });
+        });
+    };
+    CrawlerQueue.prototype._end = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.ended = true;
+                        return [4 /*yield*/, this.closeBrowser(this)];
+                    case 1:
+                        _a.sent();
+                        logger_1.logger.debug('queue run end');
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CrawlerQueue.prototype._onTaskChange = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var pending_count, running_count, _loop_1, this_1;
+            var _this = this;
+            return tslib_1.__generator(this, function (_a) {
+                pending_count = this.pending_node_list.size();
+                running_count = this.running_node_list.size();
+                if (pending_count === 0 && running_count === 0) {
+                    this.ended = true;
+                    return [2 /*return*/];
+                }
+                _loop_1 = function () {
+                    var node = this_1.pending_node_list.pop();
+                    pending_count--;
+                    running_count++;
+                    this_1.running_node_list.add(node);
+                    node.run()
+                        .then(function (res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            this.running_node_list.delete(node);
+                            if (process.env.DEBUG) {
+                                this.success_node_list.add(node);
+                            }
+                            logger_1.logger.debug(node.url + " done");
+                            this.emit('resolved', res);
+                            return [2 /*return*/];
+                        });
+                    }); })
+                        .catch(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    this.running_node_list.delete(node);
+                                    if (process.env.DEBUG) {
+                                        this.failure_node_list.add(node);
+                                    }
+                                    logger_1.logger.error(node.url + " failure");
+                                    logger_1.logger.error(err);
+                                    if (!(node.options.retry > 0)) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, node.onRetry()];
+                                case 1:
+                                    _a.sent();
+                                    node.options.retry--;
+                                    this.running_node_list.add(node);
+                                    this.emit('retry');
+                                    return [2 /*return*/];
+                                case 2:
+                                    this.emit('reject', err);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                };
+                this_1 = this;
+                while (running_count < this.max_pages && pending_count > 0) {
+                    _loop_1();
+                }
+                return [2 /*return*/];
             });
         });
     };
     return CrawlerQueue;
 }(events_1.default));
+exports.CrawlerQueue = CrawlerQueue;
 exports.Queue = new CrawlerQueue();
-exports.Queue.on('resolved', function resolved(res) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, exports.Queue.onTaskChange()];
-                case 1:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
-});
-exports.Queue.on('reject', function reject(err) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, exports.Queue.onTaskChange()];
-                case 1:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
-});

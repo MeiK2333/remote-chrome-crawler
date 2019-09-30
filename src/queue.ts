@@ -1,136 +1,202 @@
-import { Task, TaskStatus } from './task'
-import { Browser } from 'puppeteer'
-import { sleep } from './sleep'
-
-import log from 'loglevel'
-import puppeteer from 'puppeteer'
 import EventEmitter from 'events'
+import { Task } from './task'
+import { sleep } from './sleep'
+import { logger } from './logger'
+import { Browser } from 'puppeteer'
+import { createBrowser, closeBrowser, createPage, closePage } from './functions'
 
-
-class CrawlerQueue extends EventEmitter {
-    _queue: Array<Task>
-    browser: Browser
-    started: boolean
-    ended: boolean
-    max_pages: number
-
+export class CrawlerNodeList {
+    head: Task
+    tail: Task
     constructor() {
-        super();
-        this._queue = []
-        //@ts-ignore
-        this.browser = null
-        this.started = false
-        this.ended = false
-        this.max_pages = Number(process.env.pages) || 8
+        this.head = null
+        this.tail = null
     }
 
-    async push(item: Task) {
-        this._queue.push(item);
-        if (this.started) {
-            await this.onTaskChange()
+    add(node: Task) {
+        node.prev = null
+        node.next = null
+        if (this.head === null) {
+            this.head = node
+            this.tail = node
+            return
         }
+        this.tail.next = node
+        node.prev = this.tail
+        node.next = null
+        this.tail = node
     }
 
-    pop(): Task | undefined {
-        return this._queue.shift()
+    delete(node: Task): Task {
+        let cur = this.head
+        while (cur) {
+            if (node.id === cur.id) {
+                if (cur.prev) {
+                    cur.prev.next = cur.next
+                } else {
+                    this.head = cur.next
+                }
+                if (cur.next) {
+                    cur.next.prev = cur.prev
+                } else {
+                    this.tail = cur.prev
+                }
+                cur.prev = null
+                cur.next = null
+                return cur
+            }
+            cur = cur.next
+        }
+        return null
     }
 
     empty(): boolean {
-        return this._queue.length === 0
+        return this.head === null
     }
 
-    removeEnded() {
-        for (let i = 0; i < this._queue.length; i++) {
-            if (this._queue[i].status === TaskStatus.SUCCESS || this._queue[i].status === TaskStatus.FAILURE) {
-                this._queue.splice(i, 1);
-                return this.removeEnded()
-            }
+    size() {
+        let cur = this.head
+        let count = 0
+        while (cur) {
+            count++
+            cur = cur.next
         }
+        return count
     }
 
-    async onTaskChange() {
-        this.removeEnded()
-        let running = 0;
-        let pending = 0;
-        this._queue.map((task, index, array) => {
-            if (task.status === TaskStatus.RUNNING) {
-                running += 1
-            } else if (task.status === TaskStatus.PENDING) {
-                pending += 1
-            }
-        })
-
-        if (pending !== 0) {
-            for (let i = 0; i < this._queue.length && running < this.max_pages; i++) {
-                let task = this._queue[i];
-                if (task.status === TaskStatus.PENDING) {
-                    log.debug(task.url);
-                    task.crawl()
-                        .then(async res => {
-                            task.status = TaskStatus.SUCCESS
-                            log.debug(task.url, 'success')
-                            this.emit('resolved', res)
-                        })
-                        .catch(async e => {
-                            if (task.retry > 0) {
-                                console.log(`${task.url} retry: ${task.retry} -> ${task.retry - 1}`)
-                                let t = new Task(
-                                    task.url,
-                                    task.crawl_callback,
-                                    task.options
-                                )
-                                t.retry = task.retry - 1
-                                await this.push(t)
-                            }
-
-                            task.status = TaskStatus.FAILURE
-                            log.warn(task.url, 'failure')
-                            this.emit('reject', e)
-                        })
-                    running += 1
-                }
-            }
+    pop(): Task {
+        if (this.head) {
+            return this.delete(this.head)
         }
-        if (running === 0 && pending === 0) {
-            this.ended = true
-        }
+        return null
+    }
+}
+
+export class CrawlerQueue extends EventEmitter {
+    pending_node_list: CrawlerNodeList
+    running_node_list: CrawlerNodeList
+    success_node_list: CrawlerNodeList
+    failure_node_list: CrawlerNodeList
+
+    max_pages: number
+    started: boolean
+    ended: boolean
+    browser: Browser
+
+    createBrowser: CallableFunction
+    closeBrowser: CallableFunction
+    createPage: CallableFunction
+    closePage: CallableFunction
+
+    constructor() {
+        super()
+        this.pending_node_list = new CrawlerNodeList()
+        this.running_node_list = new CrawlerNodeList()
+        this.success_node_list = new CrawlerNodeList()
+        this.failure_node_list = new CrawlerNodeList()
+        this.max_pages = Number(process.env.MAX_PAGES) || 8
+        this.started = false
+        this.ended = false
+        this.browser = null
+
+        this.createBrowser = createBrowser
+        this.closeBrowser = closeBrowser
+        this.createPage = createPage
+        this.closePage = closePage
+
+        this.on('resolved', this._resolved)
+        this.on('reject', this._reject)
+        this.on('retry', this._retry)
     }
 
-    async start() {
-        this.started = true
-        this.onTaskChange()
+    async _resolved(res) {
+        await this._onTaskChange()
     }
 
-    async end() {
-        this.ended = true
-        if (this.browser) {
-            await this.browser.close()
-        }
+    async _reject(err) {
+        await this._onTaskChange()
+    }
+
+    async _retry() {
+        await this._onTaskChange()
     }
 
     async run() {
-        if (this.browser === null) {
-            this.browser = await puppeteer.launch({
-                headless: true
-            })
-        }
-        await this.start()
+        await this._start()
         while (true) {
             await sleep(100)
             if (this.ended) {
-                await this.end()
+                await this._end()
                 return
             }
+        }
+    }
+
+    async add(task: Task) {
+        task.queue = this
+        this.pending_node_list.add(task)
+        if (this.started) {
+            await this._onTaskChange()
+        }
+    }
+
+    async _start() {
+        logger.debug('queue run start')
+        this.started = true
+        this.browser = await this.createBrowser(this)
+        await this._onTaskChange()
+    }
+
+    async _end() {
+        this.ended = true
+        await this.closeBrowser(this)
+        logger.debug('queue run end')
+    }
+
+    async _onTaskChange() {
+        let pending_count = this.pending_node_list.size()
+        let running_count = this.running_node_list.size()
+        if (pending_count === 0 && running_count === 0) {
+            this.ended = true
+            return
+        }
+
+        while (running_count < this.max_pages && pending_count > 0) {
+            let node = this.pending_node_list.pop()
+            pending_count--
+            running_count++
+            this.running_node_list.add(node)
+            node.run()
+                .then(async res => {
+                    this.running_node_list.delete(node)
+                    if (process.env.DEBUG) {
+                        this.success_node_list.add(node)
+                    }
+
+                    logger.debug(`${node.url} done`)
+                    this.emit('resolved', res)
+                })
+                .catch(async err => {
+                    this.running_node_list.delete(node)
+                    if (process.env.DEBUG) {
+                        this.failure_node_list.add(node)
+                    }
+
+                    logger.error(`${node.url} failure`)
+                    logger.error(err)
+
+                    if (node.options.retry > 0) {
+                        await node.onRetry()
+                        node.options.retry--
+                        this.running_node_list.add(node)
+                        this.emit('retry')
+                        return
+                    }
+
+                    this.emit('reject', err)
+                })
         }
     }
 }
 
 export const Queue: CrawlerQueue = new CrawlerQueue()
-
-Queue.on('resolved', async function resolved(res) {
-    await Queue.onTaskChange()
-})
-
-Queue.on('reject', async function reject(err) {
-    await Queue.onTaskChange()
-})

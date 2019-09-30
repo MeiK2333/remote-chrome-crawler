@@ -1,4 +1,5 @@
 import { Page } from 'puppeteer';
+import { CrawlerQueue } from './queue';
 export declare enum TaskStatus {
     PENDING = 0,
     RUNNING = 1,
@@ -6,20 +7,23 @@ export declare enum TaskStatus {
     FAILURE = 3
 }
 export interface TaskOptions {
+    callback?: CallableFunction;
     error_callback?: CallableFunction;
-    meta?: Object;
     retry?: number;
 }
 export declare class Task {
+    __id__: number;
     url: string;
     status: TaskStatus;
-    crawl_callback: CallableFunction;
-    error_callback: CallableFunction;
-    meta: Object;
-    page: Page;
-    retry: number;
     options: TaskOptions;
-    constructor(url: string, crawl_callback: CallableFunction, options?: TaskOptions);
-    crawl(): Promise<any>;
-    error(e: Error): Promise<void>;
+    queue: CrawlerQueue;
+    page: Page;
+    prev: Task;
+    next: Task;
+    constructor(url: string, options?: TaskOptions);
+    id: number;
+    onRetry(): Promise<void>;
+    run(): Promise<any>;
+    _callback(): Promise<void>;
+    _error_callback(err: any): Promise<void>;
 }
