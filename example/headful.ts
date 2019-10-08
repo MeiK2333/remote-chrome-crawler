@@ -2,15 +2,13 @@ import { Queue, CrawlerQueue } from "../src/queue"
 import { Task } from "../src/task"
 import puppeteer from 'puppeteer'
 
-async function createBrowser(queue: CrawlerQueue) {
-    const browser = puppeteer.launch({
-        headless: false
-    })
-    return browser
-}
-
 (async () => {
-    Queue.createBrowser = createBrowser
+    Queue.createBrowser = async function createBrowser(queue: CrawlerQueue) {
+        const browser = puppeteer.launch({
+            headless: false
+        })
+        return browser
+    }
     await Queue.add(new Task('https://httpbin.org/get', { callback: print }))
     await Queue.run()
 })()

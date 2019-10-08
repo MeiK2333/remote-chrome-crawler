@@ -11,15 +11,15 @@
     "@types/node": "*",
     "@types/puppeteer": "*",
     "puppeteer": "*",
-    "winston": "*"
+    "winston": "*",
+    "tslint": "*",
+    "ts-node": "*",
+    "typescript": "*"
   },
   "devDependencies": {
     "@types/jest": "*",
     "jest": "*",
-    "ts-jest": "*",
-    "ts-node": "*",
-    "tslint": "*",
-    "typescript": "*"
+    "ts-jest": "*"
   },
   "scripts": {
     "test": "jest"
