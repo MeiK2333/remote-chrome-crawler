@@ -14,6 +14,7 @@ export interface TaskOptions {
     error_callback?: CallableFunction
     retry?: number
     timeout?: number
+    meta?: Object
 }
 
 let task_count = 0

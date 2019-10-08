@@ -11,6 +11,7 @@ export interface TaskOptions {
     error_callback?: CallableFunction;
     retry?: number;
     timeout?: number;
+    meta?: Object;
 }
 export declare class Task {
     __id__: number;
