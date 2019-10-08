@@ -143,7 +143,15 @@ export class CrawlerQueue extends EventEmitter {
     async _start() {
         logger.debug('queue run start')
         this.started = true
-        this.browser = await this.createBrowser(this)
+
+        let createBrowser = async () => {
+            if (this.ended) {
+                return
+            }
+            this.browser = await this.createBrowser(this)
+            this.browser.on('disconnected', createBrowser)
+        }
+        await createBrowser()
         await this._onTaskChange()
     }
 
