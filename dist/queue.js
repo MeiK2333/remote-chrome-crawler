@@ -168,19 +168,36 @@ var CrawlerQueue = /** @class */ (function (_super) {
     };
     CrawlerQueue.prototype._start = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
+            var createBrowser;
+            var _this = this;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         logger_1.logger.debug('queue run start');
                         this.started = true;
-                        _a = this;
-                        return [4 /*yield*/, this.createBrowser(this)];
+                        createBrowser = function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                            var _a;
+                            return tslib_1.__generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        if (this.ended) {
+                                            return [2 /*return*/];
+                                        }
+                                        _a = this;
+                                        return [4 /*yield*/, this.createBrowser(this)];
+                                    case 1:
+                                        _a.browser = _b.sent();
+                                        this.browser.on('disconnected', createBrowser);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); };
+                        return [4 /*yield*/, createBrowser()];
                     case 1:
-                        _a.browser = _b.sent();
+                        _a.sent();
                         return [4 /*yield*/, this._onTaskChange()];
                     case 2:
-                        _b.sent();
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
