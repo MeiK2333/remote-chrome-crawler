@@ -10,6 +10,7 @@ export interface TaskOptions {
     callback?: CallableFunction;
     error_callback?: CallableFunction;
     retry?: number;
+    timeout?: number;
 }
 export declare class Task {
     __id__: number;
@@ -23,6 +24,7 @@ export declare class Task {
     constructor(url: string, options?: TaskOptions);
     id: number;
     onRetry(): Promise<void>;
+    _promiseTimeout(ms: number, promise: any): Promise<unknown>;
     run(): Promise<any>;
     _callback(): Promise<void>;
     _error_callback(err: any): Promise<void>;

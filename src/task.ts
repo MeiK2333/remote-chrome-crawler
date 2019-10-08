@@ -13,6 +13,7 @@ export interface TaskOptions {
     callback?: CallableFunction
     error_callback?: CallableFunction
     retry?: number
+    timeout?: number
 }
 
 let task_count = 0
@@ -32,7 +33,8 @@ export class Task {
             ...{
                 callback: this._callback,
                 error_callback: this._error_callback,
-                retry: 0
+                retry: 0,
+                timeout: -1
             },
             ...options
         }
@@ -54,12 +56,23 @@ export class Task {
         this.status = TaskStatus.PENDING
     }
 
+    _promiseTimeout(ms: number, promise) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => reject(new Error("Task Timeout")), ms);
+            promise.then(resolve).catch(reject);
+        });
+    }
+
     async run() {
         let result;
         this.status = TaskStatus.RUNNING
-        this.page = await this.queue.createPage(this)
         try {
-            result = await this.options.callback(this)
+            this.page = await this.queue.createPage(this)
+            if (this.options.timeout > 0) {
+                result = await this._promiseTimeout(this.options.timeout, this.options.callback(this))
+            } else {
+                result = await this.options.callback(this)
+            }
         } catch (err) {
             this.status = TaskStatus.FAILURE
             await this.options.error_callback(err)
