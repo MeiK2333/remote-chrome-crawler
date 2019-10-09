@@ -191,12 +191,13 @@ export class CrawlerQueue extends EventEmitter {
                     }
 
                     logger.error(`${node.url} failure`)
-                    logger.error(err)
+                    console.error(err)
 
-                    if (node.options.retry > 0) {
+                    if (node.options.retry > 1) {
                         await node.onRetry()
+                        logger.info(`Task ${node.id}: ${node.url} retry: ${node.options.retry} -> ${node.options.retry - 1}`)
                         node.options.retry--
-                        this.running_node_list.add(node)
+                        this.pending_node_list.add(node)
                         this.emit('retry')
                         return
                     }
