@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-crawler",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -10,11 +10,12 @@
   "dependencies": {
     "@types/node": "*",
     "@types/puppeteer": "*",
+    "moment": "*",
     "puppeteer": "*",
-    "winston": "*",
-    "tslint": "*",
     "ts-node": "*",
-    "typescript": "*"
+    "tslint": "*",
+    "typescript": "*",
+    "winston": "*"
   },
   "devDependencies": {
     "@types/jest": "*",
