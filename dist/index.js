@@ -4,3 +4,4 @@ var tslib_1 = require("tslib");
 tslib_1.__exportStar(require("./queue"), exports);
 tslib_1.__exportStar(require("./task"), exports);
 tslib_1.__exportStar(require("./puppeteer-stealth"), exports);
+tslib_1.__exportStar(require("./logger"), exports);
