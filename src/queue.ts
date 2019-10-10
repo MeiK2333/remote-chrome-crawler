@@ -79,6 +79,7 @@ export class CrawlerQueue extends EventEmitter {
     failure_node_list: CrawlerNodeList
 
     max_pages: number
+    task_delay: number
     started: boolean
     ended: boolean
     browser: Browser
@@ -95,6 +96,7 @@ export class CrawlerQueue extends EventEmitter {
         this.success_node_list = new CrawlerNodeList()
         this.failure_node_list = new CrawlerNodeList()
         this.max_pages = Number(process.env.MAX_PAGES) || 8
+        this.task_delay = Number(process.env.TASK_DELAY) || 0
         this.started = false
         this.ended = false
         this.browser = null
@@ -180,6 +182,9 @@ export class CrawlerQueue extends EventEmitter {
             this.running_node_list.add(node)
             node.run()
                 .then(async res => {
+                    if (this.task_delay > 0) {
+                        await sleep(this.task_delay)
+                    }
                     this.running_node_list.delete(node)
                     if (process.env.DEBUG) {
                         this.success_node_list.add(node)
@@ -189,6 +194,9 @@ export class CrawlerQueue extends EventEmitter {
                     this.emit('resolved', res)
                 })
                 .catch(async err => {
+                    if (this.task_delay > 0) {
+                        await sleep(this.task_delay)
+                    }
                     this.running_node_list.delete(node)
                     if (process.env.DEBUG) {
                         this.failure_node_list.add(node)

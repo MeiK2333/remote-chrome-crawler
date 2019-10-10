@@ -77,6 +77,7 @@ var CrawlerQueue = /** @class */ (function (_super) {
         _this.success_node_list = new CrawlerNodeList();
         _this.failure_node_list = new CrawlerNodeList();
         _this.max_pages = Number(process.env.MAX_PAGES) || 8;
+        _this.task_delay = Number(process.env.TASK_DELAY) || 0;
         _this.started = false;
         _this.ended = false;
         _this.browser = null;
@@ -244,35 +245,50 @@ var CrawlerQueue = /** @class */ (function (_super) {
                     node.run()
                         .then(function (res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         return tslib_1.__generator(this, function (_a) {
-                            this.running_node_list.delete(node);
-                            if (process.env.DEBUG) {
-                                this.success_node_list.add(node);
+                            switch (_a.label) {
+                                case 0:
+                                    if (!(this.task_delay > 0)) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, sleep_1.sleep(this.task_delay)];
+                                case 1:
+                                    _a.sent();
+                                    _a.label = 2;
+                                case 2:
+                                    this.running_node_list.delete(node);
+                                    if (process.env.DEBUG) {
+                                        this.success_node_list.add(node);
+                                    }
+                                    logger_1.logger.debug(node.url + " done");
+                                    this.emit('resolved', res);
+                                    return [2 /*return*/];
                             }
-                            logger_1.logger.debug(node.url + " done");
-                            this.emit('resolved', res);
-                            return [2 /*return*/];
                         });
                     }); })
                         .catch(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
+                                    if (!(this.task_delay > 0)) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, sleep_1.sleep(this.task_delay)];
+                                case 1:
+                                    _a.sent();
+                                    _a.label = 2;
+                                case 2:
                                     this.running_node_list.delete(node);
                                     if (process.env.DEBUG) {
                                         this.failure_node_list.add(node);
                                     }
                                     logger_1.logger.error(node.url + " failure");
                                     console.error(err);
-                                    if (!(node.options.retry > 1)) return [3 /*break*/, 2];
+                                    if (!(node.options.retry > 1)) return [3 /*break*/, 4];
                                     return [4 /*yield*/, node.onRetry()];
-                                case 1:
+                                case 3:
                                     _a.sent();
                                     logger_1.logger.info("Task " + node.id + ": " + node.url + " retry: " + node.options.retry + " -> " + (node.options.retry - 1));
                                     node.options.retry--;
                                     this.pending_node_list.add(node);
                                     this.emit('retry');
                                     return [2 /*return*/];
-                                case 2:
+                                case 4:
                                     this.emit('reject', err);
                                     return [2 /*return*/];
                             }

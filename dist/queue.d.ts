@@ -18,6 +18,7 @@ export declare class CrawlerQueue extends EventEmitter {
     success_node_list: CrawlerNodeList;
     failure_node_list: CrawlerNodeList;
     max_pages: number;
+    task_delay: number;
     started: boolean;
     ended: boolean;
     browser: Browser;
