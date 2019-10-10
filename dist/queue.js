@@ -166,6 +166,13 @@ var CrawlerQueue = /** @class */ (function (_super) {
             });
         });
     };
+    CrawlerQueue.prototype.push = function (task) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                return [2 /*return*/, this.add(task)];
+            });
+        });
+    };
     CrawlerQueue.prototype._start = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var createBrowser;

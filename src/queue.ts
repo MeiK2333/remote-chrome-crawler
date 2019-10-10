@@ -140,6 +140,10 @@ export class CrawlerQueue extends EventEmitter {
         }
     }
 
+    async push(task: Task) {
+        return this.add(task)
+    }
+
     async _start() {
         logger.debug('queue run start')
         this.started = true

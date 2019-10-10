@@ -31,6 +31,7 @@ export declare class CrawlerQueue extends EventEmitter {
     _retry(): Promise<void>;
     run(): Promise<void>;
     add(task: Task): Promise<void>;
+    push(task: Task): Promise<void>;
     _start(): Promise<void>;
     _end(): Promise<void>;
     _onTaskChange(): Promise<void>;
