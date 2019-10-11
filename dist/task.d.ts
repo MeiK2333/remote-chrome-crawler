@@ -12,6 +12,7 @@ export interface TaskOptions {
     retry?: number;
     timeout?: number;
     meta?: Object;
+    level?: number;
 }
 export declare class Task {
     __id__: number;

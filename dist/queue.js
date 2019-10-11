@@ -5,63 +5,54 @@ var events_1 = tslib_1.__importDefault(require("events"));
 var sleep_1 = require("./sleep");
 var logger_1 = require("./logger");
 var functions_1 = require("./functions");
+var fastpriorityqueue_1 = tslib_1.__importDefault(require("fastpriorityqueue"));
 var CrawlerNodeList = /** @class */ (function () {
     function CrawlerNodeList() {
-        this.head = null;
-        this.tail = null;
+        this.queue = new fastpriorityqueue_1.default(function (t1, t2) {
+            return t1.options.level < t2.options.level;
+        });
+        this.max = 0;
+        this.count = 0;
+        this.trim_count = 100;
     }
-    CrawlerNodeList.prototype.add = function (node) {
-        node.prev = null;
-        node.next = null;
-        if (this.head === null) {
-            this.head = node;
-            this.tail = node;
-            return;
+    CrawlerNodeList.prototype.add = function (task) {
+        if (this.count++ > this.trim_count)
+            this.queue.trim();
+        if (task.options.level) {
+            this.max = this.max > task.options.level ? this.max : task.options.level;
+            this.queue.add(task);
         }
-        this.tail.next = node;
-        node.prev = this.tail;
-        node.next = null;
-        this.tail = node;
+        else {
+            this.push(task);
+        }
     };
-    CrawlerNodeList.prototype.delete = function (node) {
-        var cur = this.head;
-        while (cur) {
-            if (node.id === cur.id) {
-                if (cur.prev) {
-                    cur.prev.next = cur.next;
-                }
-                else {
-                    this.head = cur.next;
-                }
-                if (cur.next) {
-                    cur.next.prev = cur.prev;
-                }
-                else {
-                    this.tail = cur.prev;
-                }
-                cur.prev = null;
-                cur.next = null;
-                return cur;
-            }
-            cur = cur.next;
+    CrawlerNodeList.prototype.push = function (task) {
+        if (this.count++ > this.trim_count)
+            this.queue.trim();
+        this.max++;
+        task.options.level = this.max;
+        this.queue.add(task);
+    };
+    CrawlerNodeList.prototype.delete = function (task) {
+        if (this.count++ > this.trim_count)
+            this.queue.trim();
+        if (this.queue.remove(task)) {
+            return task;
         }
         return null;
     };
     CrawlerNodeList.prototype.empty = function () {
-        return this.head === null;
+        return this.queue.isEmpty();
     };
     CrawlerNodeList.prototype.size = function () {
-        var cur = this.head;
-        var count = 0;
-        while (cur) {
-            count++;
-            cur = cur.next;
-        }
-        return count;
+        return this.queue.size;
     };
     CrawlerNodeList.prototype.pop = function () {
-        if (this.head) {
-            return this.delete(this.head);
+        if (this.count++ > this.trim_count)
+            this.queue.trim();
+        var task = this.queue.poll();
+        if (task) {
+            return task;
         }
         return null;
     };
@@ -283,7 +274,7 @@ var CrawlerQueue = /** @class */ (function (_super) {
                                     return [4 /*yield*/, node.onRetry()];
                                 case 3:
                                     _a.sent();
-                                    logger_1.logger.info("Task " + node.id + ": " + node.url + " retry: " + node.options.retry + " -> " + (node.options.retry - 1));
+                                    logger_1.logger.warn("Task " + node.id + ": " + node.url + " retry: " + node.options.retry + " -> " + (node.options.retry - 1));
                                     node.options.retry--;
                                     this.pending_node_list.add(node);
                                     this.emit('retry');

@@ -4,69 +4,61 @@ import { sleep } from './sleep'
 import { logger } from './logger'
 import { Browser } from 'puppeteer'
 import { createBrowser, closeBrowser, createPage, closePage } from './functions'
+import FastPriorityQueue from 'fastpriorityqueue'
 
 export class CrawlerNodeList {
-    head: Task
-    tail: Task
+    queue: FastPriorityQueue<Task>
+    max: number
+    count: number
+    trim_count: number
+
     constructor() {
-        this.head = null
-        this.tail = null
+        this.queue = new FastPriorityQueue<Task>(function (t1: Task, t2: Task) {
+            return t1.options.level < t2.options.level
+        })
+        this.max = 0
+        this.count = 0
+        this.trim_count = 100
     }
 
-    add(node: Task) {
-        node.prev = null
-        node.next = null
-        if (this.head === null) {
-            this.head = node
-            this.tail = node
-            return
+    add(task: Task) {
+        if (this.count++ > this.trim_count) this.queue.trim()
+        if (task.options.level) {
+            this.max = this.max > task.options.level ? this.max : task.options.level
+            this.queue.add(task)
+        } else {
+            this.push(task)
         }
-        this.tail.next = node
-        node.prev = this.tail
-        node.next = null
-        this.tail = node
     }
 
-    delete(node: Task): Task {
-        let cur = this.head
-        while (cur) {
-            if (node.id === cur.id) {
-                if (cur.prev) {
-                    cur.prev.next = cur.next
-                } else {
-                    this.head = cur.next
-                }
-                if (cur.next) {
-                    cur.next.prev = cur.prev
-                } else {
-                    this.tail = cur.prev
-                }
-                cur.prev = null
-                cur.next = null
-                return cur
-            }
-            cur = cur.next
+    push(task: Task) {
+        if (this.count++ > this.trim_count) this.queue.trim()
+        this.max++
+        task.options.level = this.max
+        this.queue.add(task)
+    }
+
+    delete(task: Task): Task {
+        if (this.count++ > this.trim_count) this.queue.trim()
+        if (this.queue.remove(task)) {
+            return task
         }
         return null
     }
 
     empty(): boolean {
-        return this.head === null
+        return this.queue.isEmpty()
     }
 
     size() {
-        let cur = this.head
-        let count = 0
-        while (cur) {
-            count++
-            cur = cur.next
-        }
-        return count
+        return this.queue.size
     }
 
     pop(): Task {
-        if (this.head) {
-            return this.delete(this.head)
+        if (this.count++ > this.trim_count) this.queue.trim()
+        const task = this.queue.poll()
+        if (task) {
+            return task
         }
         return null
     }
@@ -207,7 +199,7 @@ export class CrawlerQueue extends EventEmitter {
 
                     if (node.options.retry > 1) {
                         await node.onRetry()
-                        logger.info(`Task ${node.id}: ${node.url} retry: ${node.options.retry} -> ${node.options.retry - 1}`)
+                        logger.warn(`Task ${node.id}: ${node.url} retry: ${node.options.retry} -> ${node.options.retry - 1}`)
                         node.options.retry--
                         this.pending_node_list.add(node)
                         this.emit('retry')

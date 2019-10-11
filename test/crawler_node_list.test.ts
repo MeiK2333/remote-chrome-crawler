@@ -3,20 +3,7 @@ import { Task } from "../src/task"
 
 test('new', () => {
     let list = new CrawlerNodeList()
-    expect(list.head).toBe(null)
-    expect(list.tail).toBe(null)
-})
-
-test('add', () => {
-    let list = new CrawlerNodeList()
-    let node1 = new Task('')
-    let node2 = new Task('')
-    list.add(node1)
-    expect(list.head).toBe(node1)
-    expect(list.tail).toBe(node1)
-    list.add(node2)
-    expect(list.head).toBe(node1)
-    expect(list.tail).toBe(node2)
+    expect(list.max).toBe(0)
 })
 
 test('delete', () => {
@@ -25,25 +12,9 @@ test('delete', () => {
     let node2 = new Task('')
     list.add(node1)
     let node3 = list.delete(node1)
-    expect(list.head).toBe(null)
-    expect(list.tail).toBe(null)
     expect(node3).toBe(node1)
     let node4 = list.delete(node1)
     expect(node4).toBe(null)
-
-    list.add(node1)
-    list.add(node2)
-    expect(list.head).toBe(node1)
-    expect(list.tail).toBe(node2)
-    list.delete(node2)
-    expect(list.tail).toBe(node1)
-
-    let node5 = new Task('')
-    list.add(node2)
-    list.add(node5)
-    expect(list.tail).toBe(node5)
-    list.delete(node2)
-    expect(list.tail).toBe(node5)
 })
 
 test('size', () => {
@@ -69,14 +40,10 @@ test('pop', () => {
     list.add(node1)
     list.add(node2)
     list.add(node3)
-    expect(list.head).toBe(node1)
     let node4 = list.pop()
-    expect(list.head).toBe(node2)
     expect(node1).toBe(node4)
     list.pop()
-    expect(list.head).toBe(node3)
     list.pop()
-    expect(list.head).toBe(null)
     let node5 = list.pop()
     expect(node5).toBe(null)
 })

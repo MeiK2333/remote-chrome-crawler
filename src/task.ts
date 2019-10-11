@@ -15,6 +15,7 @@ export interface TaskOptions {
     retry?: number
     timeout?: number
     meta?: Object
+    level?: number
 }
 
 let task_count = 0

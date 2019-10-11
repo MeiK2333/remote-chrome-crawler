@@ -2,12 +2,16 @@
 import EventEmitter from 'events';
 import { Task } from './task';
 import { Browser } from 'puppeteer';
+import FastPriorityQueue from 'fastpriorityqueue';
 export declare class CrawlerNodeList {
-    head: Task;
-    tail: Task;
+    queue: FastPriorityQueue<Task>;
+    max: number;
+    count: number;
+    trim_count: number;
     constructor();
-    add(node: Task): void;
-    delete(node: Task): Task;
+    add(task: Task): void;
+    push(task: Task): void;
+    delete(task: Task): Task;
     empty(): boolean;
     size(): number;
     pop(): Task;
