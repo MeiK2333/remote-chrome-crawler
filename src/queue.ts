@@ -14,7 +14,10 @@ export class CrawlerNodeList {
 
     constructor() {
         this.queue = new FastPriorityQueue<Task>(function (t1: Task, t2: Task) {
-            return t1.options.level < t2.options.level
+            if (t1.options.level != t2.options.level) {
+                return t1.options.level < t2.options.level
+            }
+            return t1.id < t2.id
         })
         this.max = 0
         this.count = 0
@@ -23,7 +26,7 @@ export class CrawlerNodeList {
 
     add(task: Task) {
         if (this.count++ > this.trim_count) this.queue.trim()
-        if (task.options.level) {
+        if (task.options.level !== null) {
             this.max = this.max > task.options.level ? this.max : task.options.level
             this.queue.add(task)
         } else {

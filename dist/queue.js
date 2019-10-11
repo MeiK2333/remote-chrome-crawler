@@ -9,7 +9,10 @@ var fastpriorityqueue_1 = tslib_1.__importDefault(require("fastpriorityqueue"));
 var CrawlerNodeList = /** @class */ (function () {
     function CrawlerNodeList() {
         this.queue = new fastpriorityqueue_1.default(function (t1, t2) {
-            return t1.options.level < t2.options.level;
+            if (t1.options.level != t2.options.level) {
+                return t1.options.level < t2.options.level;
+            }
+            return t1.id < t2.id;
         });
         this.max = 0;
         this.count = 0;
@@ -18,7 +21,7 @@ var CrawlerNodeList = /** @class */ (function () {
     CrawlerNodeList.prototype.add = function (task) {
         if (this.count++ > this.trim_count)
             this.queue.trim();
-        if (task.options.level) {
+        if (task.options.level !== null) {
             this.max = this.max > task.options.level ? this.max : task.options.level;
             this.queue.add(task);
         }
