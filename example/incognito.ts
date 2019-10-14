@@ -9,6 +9,15 @@ import { puppeteerStealth } from "../src/puppeteer-stealth"
         await puppeteerStealth(task.page)
         return task.page
     }
+    Queue.closePage = async function (task: Task) {
+        if (task.page) {
+            await task.page.close()
+        }
+        const content = task.page.browserContext()
+        if (content) {
+            await content.close()
+        }
+    }
     await Queue.add(new Task('https://httpbin.org/cookies/set/key/value', { callback: cookies1 }))
     await Queue.add(new Task('https://httpbin.org/cookies/set/key/value', { callback: cookies1 }))
     await Queue.run()
