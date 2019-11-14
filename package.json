@@ -12,6 +12,7 @@
     "@types/puppeteer": "*",
     "fastpriorityqueue": "*",
     "moment": "*",
+    "proxy-chain": "^0.3.2",
     "puppeteer": "*",
     "ts-node": "*",
     "tslint": "*",
