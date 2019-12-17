@@ -1,8 +1,6 @@
 import { promiseTimeout } from './helper'
 import { logger } from './logger'
 
-import { Page, Browser } from 'puppeteer'
-
 export enum TaskStatus {
     PENDING,
     RUNNING,
@@ -25,8 +23,6 @@ export class Task {
     __id__: number
     options: TaskOptions
     status: TaskStatus
-    page: Page
-    browser: Browser
 
     constructor(url: string, options: TaskOptions = {}) {
         this.options = {
@@ -39,8 +35,6 @@ export class Task {
         this.__id__ = task_count
         task_count++
         this.status = TaskStatus.PENDING
-        this.page = null
-        this.browser = null
     }
 
     get id(): number { return this.__id__ }

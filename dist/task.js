@@ -21,8 +21,6 @@ var Task = /** @class */ (function () {
         this.__id__ = task_count;
         task_count++;
         this.status = TaskStatus.PENDING;
-        this.page = null;
-        this.browser = null;
     }
     Object.defineProperty(Task.prototype, "id", {
         get: function () { return this.__id__; },

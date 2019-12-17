@@ -1,4 +1,3 @@
-import { Page, Browser } from 'puppeteer';
 export declare enum TaskStatus {
     PENDING = 0,
     RUNNING = 1,
@@ -17,8 +16,6 @@ export declare class Task {
     __id__: number;
     options: TaskOptions;
     status: TaskStatus;
-    page: Page;
-    browser: Browser;
     constructor(url: string, options?: TaskOptions);
     id: number;
     run(): Promise<any>;
