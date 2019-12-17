@@ -9,13 +9,18 @@
   "typings": "dist/index.d.ts",
   "dependencies": {
     "@types/node": "*",
+    "@types/puppeteer": "^2.0.0",
+    "@types/ws": "^6.0.4",
+    "chrome-remote-interface": "^0.28.1",
     "fastpriorityqueue": "*",
     "moment": "*",
     "proxy-chain": "^0.3.2",
+    "puppeteer": "^2.0.0",
     "ts-node": "*",
     "tslint": "*",
     "typescript": "*",
-    "winston": "*"
+    "winston": "*",
+    "ws": "^7.2.1"
   },
   "devDependencies": {
     "@types/jest": "*",
