@@ -72,6 +72,6 @@ export class Task {
         logger.debug('Here is the default callback function, you may need to override it')
     }
     async defaultFailureCallback(task: Task, err: Error): Promise<void> {
-        logger.debug('Here is the default callback function, you may need to override it')
+        logger.debug('Here is the default failure callback function, you may need to override it')
     }
 }

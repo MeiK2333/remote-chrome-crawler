@@ -1,6 +1,7 @@
 import { Task } from '../src/task'
+import { asyncSleep } from '../src/helper'
 
-test('task_callback', async () => {
+test('callback', async () => {
     let result = false
     const task = new Task('https://httpbin.org/get', {
         callback: async (task: Task) => { result = true }
@@ -10,7 +11,7 @@ test('task_callback', async () => {
     expect(result).toBe(true)
 })
 
-test('task_failure_callback', async () => {
+test('failure_callback', async () => {
     let result = false
     const task = new Task('https://httpbin.org/get', {
         callback: async (task: Task) => { throw new Error("Hello World!") },
@@ -25,4 +26,19 @@ test('task_failure_callback', async () => {
     }
     expect(error).toEqual(new Error("Hello World!"))
     expect(result).toBe(true)
+})
+
+test('timeout', async () => {
+    const task = new Task('https://httpbin.org/get', {
+        callback: async () => { await asyncSleep(10000) },
+        timeout: 500
+    })
+    const date = new Date()
+    try {
+        await task.run()
+    } catch (e) {
+    }
+
+    expect(new Date().getTime() - date.getTime() >= 500).toBe(true)
+    expect(new Date().getTime() - date.getTime() < 1000).toBe(true)
 })

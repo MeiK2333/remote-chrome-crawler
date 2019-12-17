@@ -1,0 +1,76 @@
+import { CrawlerTaskQueue } from '../src/queue'
+import { Task } from '../src/task'
+
+test('new', () => {
+    const queue = new CrawlerTaskQueue()
+    expect(queue.min_priority).toEqual(0)
+})
+
+test('delete', () => {
+    const queue = new CrawlerTaskQueue()
+    const task1 = new Task('')
+    const task2 = new Task('')
+    queue.add(task1)
+    const task3 = queue.delete(task1)
+    expect(task3).toEqual(task1)
+    queue.add(task2)
+    const task4 = queue.delete(task1)
+    expect(task4).toEqual(null)
+})
+
+test('size', () => {
+    const queue = new CrawlerTaskQueue()
+    const task1 = new Task('')
+    const task2 = new Task('')
+    const task3 = new Task('')
+    expect(queue.size()).toEqual(0)
+    queue.add(task1)
+    expect(queue.size()).toEqual(1)
+    queue.add(task2)
+    queue.add(task3)
+    expect(queue.size()).toEqual(3)
+    queue.delete(task1)
+    expect(queue.size()).toEqual(2)
+})
+
+test('pop', () => {
+    const queue = new CrawlerTaskQueue()
+    const task1 = new Task('')
+    const task2 = new Task('')
+    const task3 = new Task('')
+    queue.add(task1)
+    queue.add(task2)
+    queue.add(task3)
+    const task4 = queue.pop()
+    expect(task4).toEqual(task1)
+    queue.pop()
+    queue.pop()
+    const task5 = queue.pop()
+    expect(task5).toEqual(null)
+})
+
+test('empty', () => {
+    const queue = new CrawlerTaskQueue()
+    const task1 = new Task('')
+    expect(queue.empty()).toBe(true)
+    queue.add(task1)
+    expect(queue.empty()).toBe(false)
+    queue.pop()
+    expect(queue.empty()).toBe(true)
+})
+
+test('priority', () => {
+    const queue = new CrawlerTaskQueue()
+    const task1 = new Task('1', { priority: 1 })
+    const task2 = new Task('2', { priority: 2 })
+    const task3 = new Task('3', { priority: -1 })
+    queue.add(task1)
+    queue.add(task2)
+    queue.add(task3)
+    const task4 = queue.pop()
+    expect(task4).toEqual(task2)
+    expect(task4.options.priority).toEqual(2)
+    queue.pop()
+    const task5 = queue.pop()
+    expect(task5).toEqual(task3)
+})

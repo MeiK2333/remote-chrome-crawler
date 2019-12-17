@@ -78,7 +78,7 @@ var Task = /** @class */ (function () {
     Task.prototype.defaultFailureCallback = function (task, err) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
-                logger_1.logger.debug('Here is the default callback function, you may need to override it');
+                logger_1.logger.debug('Here is the default failure callback function, you may need to override it');
                 return [2 /*return*/];
             });
         });
