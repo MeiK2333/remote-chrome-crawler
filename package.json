@@ -1,5 +1,5 @@
 {
-  "name": "headful-chrome-crawler",
+  "name": "remote-chrome-crawler",
   "version": "3.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -9,11 +9,9 @@
   "typings": "dist/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "@types/puppeteer": "*",
     "fastpriorityqueue": "*",
     "moment": "*",
     "proxy-chain": "^0.3.2",
-    "puppeteer": "*",
     "ts-node": "*",
     "tslint": "*",
     "typescript": "*",
