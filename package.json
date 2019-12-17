@@ -1,6 +1,6 @@
 {
-  "name": "puppeteer-crawler",
-  "version": "2.1.2",
+  "name": "headful-chrome-crawler",
+  "version": "3.0.0",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:MeiK2333/puppeteer-crawler.git"
+    "url": "git@github.com:MeiK2333/headful-chrome-crawler.git"
   },
   "author": "",
   "license": "Apache"

@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-$ npm install MeiK2333/puppeteer-crawler
+$ npm install MeiK2333/headful-chrome-crawler
 ```
 
 ## Test
