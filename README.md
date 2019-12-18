@@ -2,6 +2,14 @@
 
 ## Install
 
+### npm
+
+```
+npm i remote-chrome-crawler
+```
+
+### github
+
 ```bash
 $ npm install MeiK2333/remote-chrome-crawler
 ```
@@ -19,5 +27,5 @@ export LOG_LEVEL=warning
 ## Test
 
 ```bash
-$ npm t
+$ npm test
 ```
