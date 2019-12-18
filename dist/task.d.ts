@@ -7,6 +7,8 @@ export declare enum TaskStatus {
 export interface TaskOptions {
     callback?: (task: Task) => Promise<any>;
     failure_callback?: (task: Task, err: Error) => Promise<void>;
+    finally_callback?: (task: Task) => Promise<void>;
+    exit_callback?: Array<(task: Task) => Promise<void>>;
     retry?: number;
     timeout?: number;
     meta?: Object;
@@ -14,6 +16,7 @@ export interface TaskOptions {
 }
 export declare class Task {
     __id__: number;
+    url: string;
     options: TaskOptions;
     status: TaskStatus;
     constructor(url: string, options?: TaskOptions);
@@ -21,4 +24,6 @@ export declare class Task {
     run(): Promise<any>;
     defaultCallback(task: Task): Promise<any>;
     defaultFailureCallback(task: Task, err: Error): Promise<void>;
+    defaultFinallyCallback(task: Task): Promise<void>;
+    atExit(func: (task: Task) => Promise<void>): Promise<void>;
 }

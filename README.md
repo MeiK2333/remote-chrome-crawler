@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-$ npm install MeiK2333/headful-chrome-crawler
+$ npm install MeiK2333/remote-chrome-crawler
 ```
 
 ## Usage
