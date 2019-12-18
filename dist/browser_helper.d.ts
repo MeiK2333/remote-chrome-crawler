@@ -8,5 +8,6 @@ export declare class BrowserHelperCls extends EventEmitter {
     addBrowser(ws_endpoint: string): Promise<void>;
     getIdleBrowser(): Promise<Browser>;
     getIdleBrowserPage(): Promise<Page>;
+    disconnect(): Promise<void>;
 }
 export declare const BrowserHelper: BrowserHelperCls;

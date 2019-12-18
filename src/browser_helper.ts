@@ -19,6 +19,7 @@ export class BrowserHelperCls extends EventEmitter {
         })
         logger.debug(`browser connected: ${ws_endpoint}`)
         this.browsers.push(browser)
+        logger.info(`${this.browsers.length}`)
         browser.on('disconnected', () => {
             logger.debug(`browser disconnected: ${ws_endpoint}`)
             this.browsers.splice(this.browsers.indexOf(browser), 1)
@@ -46,6 +47,13 @@ export class BrowserHelperCls extends EventEmitter {
         }
         const page = await browser.newPage()
         return page
+    }
+
+    async disconnect(): Promise<void> {
+        while (this.browsers.length !== 0) {
+            const browser = this.browsers[0]
+            browser.disconnect()
+        }
     }
 }
 

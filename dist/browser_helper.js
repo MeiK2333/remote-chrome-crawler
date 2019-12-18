@@ -25,6 +25,7 @@ var BrowserHelperCls = /** @class */ (function (_super) {
                         browser = _a.sent();
                         logger_1.logger.debug("browser connected: " + ws_endpoint);
                         this.browsers.push(browser);
+                        logger_1.logger.info("" + this.browsers.length);
                         browser.on('disconnected', function () {
                             logger_1.logger.debug("browser disconnected: " + ws_endpoint);
                             _this.browsers.splice(_this.browsers.indexOf(browser), 1);
@@ -79,6 +80,18 @@ var BrowserHelperCls = /** @class */ (function (_super) {
                         page = _a.sent();
                         return [2 /*return*/, page];
                 }
+            });
+        });
+    };
+    BrowserHelperCls.prototype.disconnect = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var browser;
+            return tslib_1.__generator(this, function (_a) {
+                while (this.browsers.length !== 0) {
+                    browser = this.browsers[0];
+                    browser.disconnect();
+                }
+                return [2 /*return*/];
             });
         });
     };
