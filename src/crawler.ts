@@ -41,14 +41,23 @@ export class CrawlerQueue extends EventEmitter {
 
     async _resolved(res) {
         await this._onTaskChange()
+        if (this.crawler_running === false) {
+            this.emit('onIdle')
+        }
     }
 
     async _reject(err) {
         await this._onTaskChange()
+        if (this.crawler_running === false) {
+            this.emit('onIdle')
+        }
     }
 
     async _retry() {
         await this._onTaskChange()
+        if (this.crawler_running === false) {
+            this.emit('onIdle')
+        }
     }
 
 
@@ -67,12 +76,14 @@ export class CrawlerQueue extends EventEmitter {
     }
 
     async waitIdle() {
-        while (true) {
-            await asyncSleep(100)
-            if (this.crawler_running === false) {
-                return
-            }
+        if (this.crawler_running === false) {
+            return
         }
+        return new Promise((resolve, reject) => {
+            this.on('onIdle', () => {
+                resolve()
+            })
+        })
     }
 
     async end() {
