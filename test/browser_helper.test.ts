@@ -1,4 +1,4 @@
-import BrowserHelper from '../src/browser_helper'
+import { BrowserHelper } from '../src/browser_helper'
 
 import puppeteer from 'puppeteer'
 

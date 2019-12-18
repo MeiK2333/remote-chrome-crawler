@@ -4,14 +4,14 @@ var tslib_1 = require("tslib");
 var logger_1 = require("./logger");
 var events_1 = require("events");
 var puppeteer_1 = tslib_1.__importDefault(require("puppeteer"));
-var BrowserHelper = /** @class */ (function (_super) {
-    tslib_1.__extends(BrowserHelper, _super);
-    function BrowserHelper() {
+var BrowserHelperCls = /** @class */ (function (_super) {
+    tslib_1.__extends(BrowserHelperCls, _super);
+    function BrowserHelperCls() {
         var _this = _super.call(this) || this;
         _this.browsers = [];
         return _this;
     }
-    BrowserHelper.prototype.addBrowser = function (ws_endpoint) {
+    BrowserHelperCls.prototype.addBrowser = function (ws_endpoint) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var browser;
             var _this = this;
@@ -34,7 +34,7 @@ var BrowserHelper = /** @class */ (function (_super) {
             });
         });
     };
-    BrowserHelper.prototype.getIdleBrowser = function () {
+    BrowserHelperCls.prototype.getIdleBrowser = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var browser, min_pages, i, item, len;
             return tslib_1.__generator(this, function (_a) {
@@ -63,7 +63,7 @@ var BrowserHelper = /** @class */ (function (_super) {
             });
         });
     };
-    BrowserHelper.prototype.getIdleBrowserPage = function () {
+    BrowserHelperCls.prototype.getIdleBrowserPage = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var browser, page;
             return tslib_1.__generator(this, function (_a) {
@@ -82,7 +82,7 @@ var BrowserHelper = /** @class */ (function (_super) {
             });
         });
     };
-    return BrowserHelper;
+    return BrowserHelperCls;
 }(events_1.EventEmitter));
-exports.BrowserHelper = BrowserHelper;
-exports.default = new BrowserHelper();
+exports.BrowserHelperCls = BrowserHelperCls;
+exports.BrowserHelper = new BrowserHelperCls();

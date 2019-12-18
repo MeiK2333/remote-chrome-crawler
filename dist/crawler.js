@@ -31,6 +31,9 @@ var CrawlerQueue = /** @class */ (function (_super) {
                     case 0: return [4 /*yield*/, this._onTaskChange()];
                     case 1:
                         _a.sent();
+                        if (this.crawler_running === false) {
+                            this.emit('onIdle');
+                        }
                         return [2 /*return*/];
                 }
             });
@@ -43,6 +46,9 @@ var CrawlerQueue = /** @class */ (function (_super) {
                     case 0: return [4 /*yield*/, this._onTaskChange()];
                     case 1:
                         _a.sent();
+                        if (this.crawler_running === false) {
+                            this.emit('onIdle');
+                        }
                         return [2 /*return*/];
                 }
             });
@@ -55,6 +61,9 @@ var CrawlerQueue = /** @class */ (function (_super) {
                     case 0: return [4 /*yield*/, this._onTaskChange()];
                     case 1:
                         _a.sent();
+                        if (this.crawler_running === false) {
+                            this.emit('onIdle');
+                        }
                         return [2 /*return*/];
                 }
             });
@@ -94,19 +103,16 @@ var CrawlerQueue = /** @class */ (function (_super) {
     };
     CrawlerQueue.prototype.waitIdle = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!true) return [3 /*break*/, 2];
-                        return [4 /*yield*/, helper_1.asyncSleep(100)];
-                    case 1:
-                        _a.sent();
-                        if (this.crawler_running === false) {
-                            return [2 /*return*/];
-                        }
-                        return [3 /*break*/, 0];
-                    case 2: return [2 /*return*/];
+                if (this.crawler_running === false) {
+                    return [2 /*return*/];
                 }
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.on('onIdle', function () {
+                            resolve();
+                        });
+                    })];
             });
         });
     };

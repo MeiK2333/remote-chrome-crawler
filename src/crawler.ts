@@ -60,7 +60,6 @@ export class CrawlerQueue extends EventEmitter {
         }
     }
 
-
     async add(task: Task) {
         logger.debug(`add task ${task.id}: ${task.url} to crawler`)
         this.pending_queue.add(task)

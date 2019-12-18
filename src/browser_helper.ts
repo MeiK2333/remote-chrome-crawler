@@ -4,7 +4,7 @@ import { EventEmitter } from "events"
 import puppeteer, { Page } from 'puppeteer'
 import { Browser } from 'puppeteer'
 
-export class BrowserHelper extends EventEmitter {
+export class BrowserHelperCls extends EventEmitter {
     browsers: Array<Browser>
 
     constructor() {
@@ -49,4 +49,4 @@ export class BrowserHelper extends EventEmitter {
     }
 }
 
-export default new BrowserHelper()
+export const BrowserHelper = new BrowserHelperCls()
