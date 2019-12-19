@@ -26,10 +26,7 @@ import puppeteer from 'puppeteer'
 })()
 
 async function print(task: Task) {
-    const page = await BrowserHelper.getIdleBrowserPage()
-    await task.atExit(async () => {
-        await page.close()
-    })
+    const page = await BrowserHelper.getIdleBrowserPage(task)
     await page.goto(task.url)
     const data = await page.evaluate(() => {
         return document.body.innerText

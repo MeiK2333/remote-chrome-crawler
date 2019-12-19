@@ -3,6 +3,7 @@ import { logger } from './logger'
 import { EventEmitter } from "events"
 import puppeteer, { Page } from 'puppeteer'
 import { Browser } from 'puppeteer'
+import { Task } from './task'
 
 export class BrowserHelperCls extends EventEmitter {
     browsers: Array<Browser>
@@ -40,12 +41,17 @@ export class BrowserHelperCls extends EventEmitter {
         return browser
     }
 
-    async getIdleBrowserPage(): Promise<Page> {
+    async getIdleBrowserPage(task: Task = null): Promise<Page> {
         const browser = await this.getIdleBrowser()
         if (browser === null) {
             return null
         }
         const page = await browser.newPage()
+        if (task !== null) {
+            await task.atExit(async () => {
+                await page.close()
+            })
+        }
         return page
     }
 
