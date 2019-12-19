@@ -146,4 +146,4 @@ export class CrawlerQueue extends EventEmitter {
     }
 }
 
-export default new CrawlerQueue()
+export const Crawler = new CrawlerQueue()

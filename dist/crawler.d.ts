@@ -24,5 +24,5 @@ export declare class CrawlerQueue extends EventEmitter {
     run(): Promise<void>;
     _onTaskChange(): Promise<void>;
 }
-declare const _default: CrawlerQueue;
-export default _default;
+export declare const Crawler: CrawlerQueue;
+export {};

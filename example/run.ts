@@ -1,4 +1,4 @@
-import Crawl from '../src/crawler'
+import { Crawler } from '../src/crawler'
 import { Task } from '../src/task'
 import { BrowserHelper } from '../src/browser_helper'
 import { logger } from '../src/logger'
@@ -19,8 +19,8 @@ import puppeteer from 'puppeteer'
         defaultViewport: null,
     })
     await BrowserHelper.addBrowser(browser.wsEndpoint())
-    await Crawl.add(new Task('https://httpbin.org/get', { callback: print }))
-    await Crawl.run()
+    await Crawler.add(new Task('https://httpbin.org/get', { callback: print }))
+    await Crawler.run()
     await asyncSleep(3000)
     await browser.close()
 })()

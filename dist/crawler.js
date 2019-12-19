@@ -226,4 +226,4 @@ var CrawlerQueue = /** @class */ (function (_super) {
     return CrawlerQueue;
 }(events_1.EventEmitter));
 exports.CrawlerQueue = CrawlerQueue;
-exports.default = new CrawlerQueue();
+exports.Crawler = new CrawlerQueue();
