@@ -20,7 +20,6 @@ export class BrowserHelperCls extends EventEmitter {
         })
         logger.debug(`browser connected: ${ws_endpoint}`)
         this.browsers.push(browser)
-        logger.info(`${this.browsers.length}`)
         browser.on('disconnected', () => {
             logger.debug(`browser disconnected: ${ws_endpoint}`)
             this.browsers.splice(this.browsers.indexOf(browser), 1)

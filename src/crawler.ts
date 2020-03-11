@@ -133,11 +133,10 @@ export class CrawlerQueue extends EventEmitter {
                         return
                     }
 
-                    try {
-                        await task.options.failure_callback(task, err)
-                    } catch (e) {
-                        console.error(e)
-                    }
+                    task.options.failure_callback(task, err)
+                        .catch((e) => {
+                            console.error(e)
+                        })
                     this.emit('reject', err)
                 })
             pending_count--

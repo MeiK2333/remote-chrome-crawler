@@ -181,35 +181,23 @@ var CrawlerQueue = /** @class */ (function (_super) {
                         });
                     }); })
                         .catch(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        var e_1;
                         return tslib_1.__generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    this.running_queue.delete(task);
-                                    logger_1.logger.error(task.url + " failure");
-                                    console.error(err);
-                                    if (task.options.retry > 1) {
-                                        logger_1.logger.warn("Task " + task.id + ": " + task.url + " retry: " + task.options.retry + " -> " + (task.options.retry - 1));
-                                        task.options.retry--;
-                                        this.pending_queue.add(task);
-                                        this.emit('retry');
-                                        return [2 /*return*/];
-                                    }
-                                    _a.label = 1;
-                                case 1:
-                                    _a.trys.push([1, 3, , 4]);
-                                    return [4 /*yield*/, task.options.failure_callback(task, err)];
-                                case 2:
-                                    _a.sent();
-                                    return [3 /*break*/, 4];
-                                case 3:
-                                    e_1 = _a.sent();
-                                    console.error(e_1);
-                                    return [3 /*break*/, 4];
-                                case 4:
-                                    this.emit('reject', err);
-                                    return [2 /*return*/];
+                            this.running_queue.delete(task);
+                            logger_1.logger.error(task.url + " failure");
+                            console.error(err);
+                            if (task.options.retry > 1) {
+                                logger_1.logger.warn("Task " + task.id + ": " + task.url + " retry: " + task.options.retry + " -> " + (task.options.retry - 1));
+                                task.options.retry--;
+                                this.pending_queue.add(task);
+                                this.emit('retry');
+                                return [2 /*return*/];
                             }
+                            task.options.failure_callback(task, err)
+                                .catch(function (e) {
+                                console.error(e);
+                            });
+                            this.emit('reject', err);
+                            return [2 /*return*/];
                         });
                     }); });
                     pending_count--;

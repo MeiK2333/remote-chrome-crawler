@@ -25,7 +25,6 @@ var BrowserHelperCls = /** @class */ (function (_super) {
                         browser = _a.sent();
                         logger_1.logger.debug("browser connected: " + ws_endpoint);
                         this.browsers.push(browser);
-                        logger_1.logger.info("" + this.browsers.length);
                         browser.on('disconnected', function () {
                             logger_1.logger.debug("browser disconnected: " + ws_endpoint);
                             _this.browsers.splice(_this.browsers.indexOf(browser), 1);
@@ -64,9 +63,11 @@ var BrowserHelperCls = /** @class */ (function (_super) {
             });
         });
     };
-    BrowserHelperCls.prototype.getIdleBrowserPage = function () {
+    BrowserHelperCls.prototype.getIdleBrowserPage = function (task) {
+        if (task === void 0) { task = null; }
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var browser, page;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getIdleBrowser()];
@@ -78,7 +79,21 @@ var BrowserHelperCls = /** @class */ (function (_super) {
                         return [4 /*yield*/, browser.newPage()];
                     case 2:
                         page = _a.sent();
-                        return [2 /*return*/, page];
+                        if (!(task !== null)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, task.atExit(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                                return tslib_1.__generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, page.close()];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: return [2 /*return*/, page];
                 }
             });
         });

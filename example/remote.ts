@@ -14,7 +14,6 @@ import { asyncSleep } from '../src/helper'
         await Crawler.add(new Task('https://httpbin.org/get', { callback: print }))
     }
     await Crawler.run()
-    await asyncSleep(3000)
     await BrowserHelper.disconnect()
 })()
 
