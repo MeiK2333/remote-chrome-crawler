@@ -9,18 +9,16 @@
   "typings": "dist/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "@types/puppeteer": "^2.0.0",
     "@types/ws": "^6.0.4",
     "fastpriorityqueue": "*",
     "moment": "*",
     "winston": "*",
+    "typescript": "*",
     "ws": "^7.2.1"
   },
   "devDependencies": {
     "ts-node": "*",
     "tslint": "*",
-    "typescript": "*",
-    "puppeteer": "^2.0.0",
     "@types/jest": "*",
     "jest": "*",
     "ts-jest": "*"
